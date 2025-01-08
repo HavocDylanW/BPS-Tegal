@@ -8,7 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body>
+<body class="bg-black">
     <div class="container mx-auto mt-10">
         <h1 class="text-3xl font-bold text-red-600">Unauthorized Access</h1>
         <p>You are not authorized to access this page.</p>

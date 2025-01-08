@@ -1,18 +1,24 @@
-/.phpunit.cache
+# Laravel & PHP-related
+/vendor
 /node_modules
-/public/build
 /public/hot
 /public/storage
 /storage/*.key
-/vendor
+/storage/app/public
+/storage/debugbar
+/storage/framework/sessions
+/storage/framework/testing
+/storage/logs
+/bootstrap/cache
+
+# Environment variables
 .env
-.env.backup
-.env.production
-Homestead.json
-Homestead.yaml
-auth.json
-npm-debug.log
-yarn-error.log
-/.fleet
-/.idea
-/.vscode
+.env.*
+
+# IDE-specific files
+.idea
+.vscode
+
+# OS-generated files
+.DS_Store
+Thumbs.db

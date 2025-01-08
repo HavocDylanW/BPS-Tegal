@@ -37,6 +37,6 @@ class Assignment extends Model
 
     public function isOverdue()
     {
-        return $this->tgl_selesai < now();
+        return $this->tgl_selesai && $this->tgl_selesai < now();
     }
 }

@@ -3,7 +3,6 @@
 @section('content')
     <div class="p-4 sm:ml-64 mt-14">
         <section class="p-4 sm:p-7">
-            <!-- Judul Table -->
             <p class="text-4xl font-bold text-gray-900 dark:text-white">Data Tugas</p>
             <div class="mt-2 mb-5 sm:mb-10">
                 <nav class="flex" aria-label="Breadcrumb">
@@ -37,7 +36,7 @@
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                         stroke-width="2" d="m1 9 4-4-4-4" />
                                 </svg>
-                                <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Teams</span>
+                                <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Users</span>
                             </div>
                         </li>
                     </ol>
@@ -50,9 +49,9 @@
                         class="flex items-center justify-between flex-column flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4">
                         <div>
                             @if (Auth::user()->roles->contains('name', 'Super Admin'))
-                                <a href="{{ route('teams.create') }}"
+                                <a href="{{ route('users.create') }}"
                                     class="text-white drop-shadow-xl bg-[#f18f01] hover:bg-[#bd8229] focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Tambah
-                                    Tim
+                                    User
                                 </a>
                             @endif
                         </div>
@@ -74,82 +73,75 @@
                     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
-                                <th scope="col" class="px-6 py-3">
-                                    Nama Tim
-                                </th>
-                                <th scope="col" class="px-6 py-3">
+                                <th scope="col" class="px-6 py-3 text-center">
                                     Nama
                                 </th>
-                                <th scope="col" class="px-6 py-3">
-                                    Member
+                                <th scope="col" class="px-6 py-3 text-center">
+                                    Role
                                 </th>
-                                <th scope="col" class="px-6 py-3">
-                                    Action
+                                <th scope="col" class="px-6 py-3 text-center">
+                                    Tim
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-center">
+                                    Aksi
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($teams as $team)
+                            @foreach ($users as $user)
                                 <tr
                                     class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <td class="px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
-                                        <div class="ps-3">
-                                            <div class="text-base font-semibold">{{ $team->name ?? 'No Leader' }}</div>
-                                            <div class="font-normal text-gray-500">Dibentuk pada
-                                                {{ $team->created_at ? $team->created_at->format('d F Y') : 'N/A' }}</div>
-                                        </div>
-                                    </td>
                                     <th scope="row"
                                         class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white">
-                                        @if ($team->leader)
-                                            @if ($team->leader->profile_picture)
-                                                <img class="w-10 h-10 rounded-full"
-                                                    src="{{ asset($team->leader->profile_picture) }}"
-                                                    alt="{{ $team->leader->name }}">
-                                            @else
-                                                <img src="{{ asset('images/default-profile.png') }}"
-                                                    alt="Default profile picture" class="w-10 h-10 rounded-full">
-                                            @endif
-                                        @else
-                                            No Leader
-                                        @endif
+                                        <img class="w-10 h-10 rounded-full"
+                                            src="{{ $user->profile_picture ? asset($user->profile_picture) : asset('images/default-profile.png') }}"
+                                            alt="{{ $user->name }}">
                                         <div class="ps-3">
-                                            <div class="text-base font-semibold">{{ $team->leader->name ?? 'No Leader' }}
-                                            </div>
-                                            <div class="font-normal text-gray-500">{{ $team->leader->email ?? 'No Leader' }}
-                                            </div>
+                                            {{-- <p>Profile Picture Path: {{ asset($user->profile_picture) }}</p> --}}
+                                            <div class="text-base font-semibold">{{ $user->name }}</div>
+                                            <div class="font-normal text-gray-500">{{ $user->email }}</div>
                                         </div>
                                     </th>
-                                    <td class="px-6 py-4">
-                                        <div class="flex -space-x-4 rtl:space-x-reverse">
-                                            @foreach ($team->members as $member)
-                                                @if ($member->profile_picture)
-                                                    <!-- Check if profile_picture exists -->
-                                                    <img class="w-7 h-7 rounded-full"
-                                                        src="{{ asset($member->profile_picture) }}"
-                                                        alt="{{ $member->name }}">
-                                                @else
-                                                    <img src="{{ asset('images/default-profile.png') }}"
-                                                        alt="Default profile picture" class="w-7 h-7 rounded-full">
-                                                @endif
-                                            @endforeach
-                                        </div>
+                                    <td class="px-6 py-4 text-center">
+                                        @foreach ($user->roles as $role)
+                                            @if ($role->name === 'Employee')
+                                                <span
+                                                    class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Employee</span>
+                                            @elseif ($role->name === 'Admin')
+                                                <span
+                                                    class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Admin</span>
+                                            @elseif ($role->name === 'Super Admin')
+                                                <span
+                                                    class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Super
+                                                    Admin</span>
+                                            @else
+                                                <!-- Default style for any other roles -->
+                                                <span
+                                                    class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">{{ $role->name }}</span>
+                                            @endif
+                                        @endforeach
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <a href="{{ route('teams.edit', $team->id) }}"
-                                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                                        <form action="{{ route('teams.destroy', $team->id) }}" method="POST"
-                                            style="display:inline-block;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Delete</button>
-                                        </form>
+                                    <td class="px-6 py-4 text-center">
+                                        @if ($user->teams->isEmpty())
+                                            <span>Haven't been Assigned yet</span>
+                                        @else
+                                            @foreach ($user->teams as $team)
+                                                {{ $team->name }}
+                                            @endforeach
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <a href="{{ route('users.edit', $user->id) }}"
+                                            class="px-3 py-2 text-sm font-medium text-center focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 rounded-md dark:focus:ring-yellow-900">Edit
+                                        </a>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
+                    <div class="p-5">
+                        {{ $users->links() }}
+                    </div>
                 </div>
             </div>
         </section>

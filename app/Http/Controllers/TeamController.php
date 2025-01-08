@@ -19,40 +19,76 @@ class TeamController extends Controller
     // List all teams
     public function index()
     {
-        $teams = Team::with('members')->get();
-        return view('team.index', compact('teams'));
+        $user = Auth::user(); // Get the authenticated user
+        $teams = Team::with('members')->get(); // Fetch teams with their members
+        return view('team.index', compact('teams', 'user')); // Pass both variables to the view
     }
 
     // Show form for creating a team
+    
     public function create()
     {
-        // Fetch users with the role of 'admin' for team leaders
-        $leaders = User::whereHas('roles', function($query) {
-            $query->where('name', 'Admin'); // Only include admins as leaders
+        // Fetch all users who are admins (for the leader dropdown)
+        $leaders = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
         })->get();
 
-        // Fetch users with roles of 'employee' for team members
-        $employees = User::whereHas('roles', function($query) {
-            $query->where('name', 'Employee'); // Include only employees
+        // Fetch all users who can be team members (admins and employees)
+        $employees = User::whereHas('roles', function ($query) {
+            $query->whereIn('name', ['employee', 'admin']);
         })->get();
 
-        // Fetch the last team and its members
-        $lastTeam = Team::latest()->first();
-        $lastTeamMembers = $lastTeam ? $lastTeam->members()->pluck('id')->toArray() : [];
+        // Get IDs of members in any team
+        $teamMembers = Team::with('members') // Eager load members
+            ->get()
+            ->pluck('members.*.id') // Get all member IDs
+            ->flatten() // Flatten the array
+            ->unique(); // Ensure unique IDs
 
-        // dd($leaders, $employees, $lastTeam, $lastTeamMembers);
+        // Filter employees to exclude those already in any team
+        $availableEmployees = $employees->whereNotIn('id', $teamMembers);
 
-        return view('team.create', compact('leaders', 'employees', 'lastTeamMembers')); // Pass leaders, employees, and lastTeamMembers to the view
+        // Get IDs of leaders already assigned to a team
+        $assignedLeaders = Team::pluck('leader_id')->toArray();
+
+        // Filter leaders to exclude those already assigned to a team
+        $availableLeaders = $leaders->whereNotIn('id', $assignedLeaders);
+
+        // Pass the available leaders and available employees to the view
+        return view('team.create', compact('availableLeaders', 'availableEmployees'));
     }
 
     public function edit($id)
     {
+        // Fetch the team along with its members and leader
         $team = Team::with('members', 'leader')->findOrFail($id);
-        $users = User::whereHas('roles', function ($query) {
+
+        // Fetch all users who can be leaders
+        $leaders = User::whereHas('roles', function ($query) {
+            $query->where('name', 'leader');
+        })->get();
+
+        // Fetch all users who can be team members
+        $employees = User::whereHas('roles', function ($query) {
             $query->whereIn('name', ['employee', 'admin']);
         })->get();
 
-        return view('team.edit', compact('team', 'users')); // Pass leader and users to view
+        // Get the IDs of the current team members
+        $lastTeamMembers = $team->members->pluck('id')->toArray();
+
+        // Get IDs of members in other teams
+        $otherTeamMembers = Team::where('id', '!=', $id) // Exclude the current team
+            ->with('members') // Eager load members
+            ->get()
+            ->pluck('members.*.id') // Get all member IDs
+            ->flatten() // Flatten the array
+            ->unique(); // Ensure unique IDs
+
+        // Filter employees to exclude those already in other teams
+        $availableEmployees = $employees->whereNotIn('id', $otherTeamMembers);
+
+        // Pass the team, leaders, available employees, and last team members to the view
+        return view('team.edit', compact('team', 'leaders', 'availableEmployees', 'lastTeamMembers'));
     }
 
     public function store(Request $request)
@@ -85,7 +121,7 @@ class TeamController extends Controller
 
         // dd($leaders, $employees, $lastTeam, $lastTeamMembers);
 
-        return redirect()->route('teams.index')->with('success', 'Team created successfully!');
+        return redirect()->route('teams.index')->with('success', 'Tim berhasil dibuat!');
     }
 
     // Update team
@@ -106,14 +142,20 @@ class TeamController extends Controller
         // Sync team members
         $team->members()->sync($request->members);
 
-        return redirect()->route('teams.index')->with('success', 'Team updated successfully!');
+        return redirect()->route('teams.index')->with('success', 'Tim berhasil diubah!');
     }
 
     // Delete team
     public function destroy($id)
     {
         $team = Team::findOrFail($id);
+
+        if ($team->assignments()->exists()) {
+            return redirect()->back()->with('error', 'Tidak dapat menghapus tim yang sudah terdapat tugas..');
+        }
+
         $team->delete();
-        return redirect()->route('teams.index')->with('success', 'Team deleted successfully!');
+
+        return redirect()->route('teams.index')->with('success', 'Tim berhasil dihapus!');
     }
 }

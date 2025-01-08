@@ -6,8 +6,9 @@
             <div class="w-full max-w-sm">
                 <div
                     class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                    <form class="max-w-sm mx-auto" action="{{ route('teams.store') }}" method="POST">
+                    <form class="max-w-sm mx-auto" action="{{ route('teams.update', $team->id) }}" method="POST">
                         @csrf
+                        @method('PUT') <!-- Use PUT method for updating -->
 
                         @if ($errors->any())
                             <div class="mb-4 text-red-600">
@@ -24,7 +25,7 @@
                                 Tim</label>
                             <input type="text" name="name" id="name"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                placeholder="Bunga Mawar" required />
+                                placeholder="Bunga Mawar" value="{{ old('name', $team->name) }}" required />
                         </div>
 
                         <div class="mb-4">
@@ -35,7 +36,7 @@
                                 <button id="dropdownLeaderButton" data-dropdown-toggle="dropdownLeader"
                                     class="w-full text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 flex items-center justify-between px-4 py-2"
                                     type="button">
-                                    Choose a leader
+                                    {{ $team->leader->name }} <!-- Display the current leader's name -->
                                     <svg class="w-4 h-4 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                         fill="none" viewBox="0 0 10 6">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -46,7 +47,7 @@
                                     class="z-10 hidden bg-white rounded-lg shadow w-full dark:bg-gray-700">
                                     <ul class="py-2 text-sm text-gray-700 dark:text-gray-200"
                                         aria-labelledby="dropdownLeaderButton">
-                                        @foreach ($availableLeaders as $leader)
+                                        @foreach ($leaders as $leader)
                                             <li>
                                                 <a href="#"
                                                     class="flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
@@ -61,7 +62,8 @@
                                     </ul>
                                 </div>
                             </div>
-                            <input type="hidden" name="leader" id="selectedLeader" required>
+                            <input type="hidden" name="leader" id="selectedLeader" value="{{ $team->leader_id }}"
+                                required>
                         </div>
 
                         <script>
@@ -128,7 +130,8 @@
                                                     {{ $employee->name }}
                                                 </div>
                                                 <input type="checkbox" name="members[]" value="{{ $employee->id }}"
-                                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 ml-auto">
+                                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 ml-auto"
+                                                    @if (in_array($employee->id, $lastTeamMembers)) checked @endif>
                                             </label>
                                         </li>
                                     @endforeach
@@ -138,7 +141,7 @@
 
                         <button type="submit"
                             class="w-full mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
-                            Tambah Team
+                            Update Team
                         </button>
                     </form>
                 </div>

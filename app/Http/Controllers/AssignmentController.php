@@ -14,47 +14,52 @@ class AssignmentController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $teams = Team::all(); // Fetch all teams
 
-        // If the user is an employee, only show assignments for their teams
         if ($user->roles->contains('name', 'Employee')) {
+            // Employees: Only assignments for their teams
             $assignments = Assignment::whereHas('team', function ($query) use ($user) {
                 $query->where(function ($subQuery) use ($user) {
                     $subQuery->whereIn('teams.id', $user->teams->pluck('id')) // Team members
-                             ->orWhere('teams.leader_id', $user->id);         // Or if the user is the leader
+                            ->orWhere('teams.leader_id', $user->id);         // Or if the user is the leader
                 });
             })->with('team')->get();
+
+            // Fetch teams only for the current employee
+            $teams = $user->teams;
         } else {
-            // For Admins or Super Admins, show all assignments
+            // Admins and Super Admins: All assignments and teams
             $assignments = Assignment::with('team')->get();
-        }                
-
-        // if ($user->roles->contains('name', 'Employee')) {
-        //     $assignments = Assignment::whereHas('team', function($query) use ($user) {
-        //         $query->whereIn('teams.id', $user->teams->pluck('id'));
-        //     })->with('team')->get();
-        // } else {
-        //     // For Admins or Super Admins, show all assignments
-        //     $assignments = Assignment::with('team')->get();
-        // }
-
-        return view('assignment.index', compact('assignments', 'teams')); // Pass teams to the view
-    }
-
-    public function showSubmissions($assignmentId)
-    {
-        $assignment = Assignment::with('submissions.user')->findOrFail($assignmentId); // Fetch the assignment with its submissions
-
-        // Check if the authenticated user is either part of the team, the leader, or has the role of Admin/Super Admin
-        if (!Auth::user()->teams->contains($assignment->team_id) && 
-            Auth::id() !== $assignment->team->leader_id && // Check if the user is the leader
-            !Auth::user()->roles->contains('name', 'Admin') && 
-            !Auth::user()->roles->contains('name', 'Super Admin')) {
-            return redirect()->route('unauthorized'); // Redirect to unauthorized page
+            $teams = Team::all(); // Fetch all teams
         }
 
-        // If the user is part of the team, the leader, or is an Admin/Super Admin, allow access
-        return view('assignment.submissions', compact('assignment'));
+        return view('assignment.index', compact('assignments', 'teams'));
+    }
+
+    public function showSubmissions(Request $request, $assignmentId)
+    {
+        $assignment = Assignment::with(['submissions.user'])->findOrFail($assignmentId);
+
+        // Check user access permissions (already implemented in your method)
+        if (!Auth::user()->teams->contains($assignment->team_id) &&
+            Auth::id() !== $assignment->team->leader_id &&
+            !Auth::user()->roles->contains('name', 'Admin') &&
+            !Auth::user()->roles->contains('name', 'Super Admin')) {
+            return redirect()->route('unauthorized');
+        }
+
+        // Get the filter from the request
+        $filter = $request->get('filter');
+        $submissions = $assignment->submissions();
+
+        // Apply filtering based on approval_status
+        if (in_array($filter, ['0', '1', '2'])) {
+            $submissions->where('approval_status', $filter);
+        }
+
+        // Pass filtered submissions to the view
+        $submissions = $submissions->get();
+
+        return view('assignment.submissions', compact('assignment', 'submissions', 'filter'));
     }
 
     public function create()
@@ -71,7 +76,7 @@ class AssignmentController extends Controller
 
         // Check if the user is an Admin
         if (!$user->roles->contains('name', 'Admin')) {
-            return redirect()->route('assignments.index')->with('error', 'You do not have permission to create an assignment.');
+            return redirect()->route('assignments.index')->with('error', 'Anda tidak berwenang untuk membuat tugas.');
         }
 
         $request->validate([
@@ -96,26 +101,40 @@ class AssignmentController extends Controller
             'created_by' => Auth::id(), // Set the currently authenticated user as the creator
         ]);
 
-        return redirect()->route('assignments.index')->with('success', 'Assignment created successfully.');
+        return redirect()->route('assignments.index')->with('success', 'Tugas berhasil dibuat!');
     }
 
     public function editKeterangan(Assignment $assignment)
     {
+        $user = Auth::user();
+
+        // Restrict access to the leader of the assignment's team
+        if ($assignment->team->leader_id !== $user->id) {
+            return redirect()->route('assignments.index')->with('error', 'Anda tidak berwenang untuk mengubah keterangan ini.');
+        }
+
         return view('assignment.edit', compact('assignment'));
     }
 
     public function updateKeterangan(Request $request, Assignment $assignment)
     {
+        $user = Auth::user();
+
+        // Restrict access to the leader of the assignment's team
+        if ($assignment->team->leader_id !== $user->id) {
+            return redirect()->route('assignments.index')->with('error', 'Anda tidak berwenang untuk mengubah tugas ini.');
+        }
+
         // Validate the request data
         $request->validate([
             'keterangan' => 'required|string|max:255', // Adjust validation as needed
         ]);
 
-        // Update the keterangan field
+        // Update the `keterangan` field
         $assignment->keterangan = $request->keterangan;
         $assignment->save();
 
         // Redirect or respond as needed
-        return redirect()->route('assignments.index')->with('success', 'Keterangan updated successfully.');
+        return redirect()->route('assignments.index')->with('success', 'Keterangan berhasil diubah!');
     }
 }

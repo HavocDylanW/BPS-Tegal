@@ -8,14 +8,19 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body
-    class="backdrop-blur-[10px] bg-[url('https://flowbite.s3.amazonaws.com/blocks/marketing-ui/content/content-gallery-3.png')]"
-    alt="image description">
+<body class="bg-gray-100 dark:bg-gray-950">
     <section>
-        <div class="flex items-center justify-center min-h-screen">
+        <div class="flex items-center justify-center my-48">
             <div class="w-full max-w-sm">
+                <div class="flex items-center space-x-3 ms-12 rtl:space-x-reverse">
+                    <img src="{{ asset('assets/imgs/LambangBPS.svg') }}" class="h-8" alt="Flowbite Logo" />
+                    <span
+                        class="self-center leading-5 sm:text-md text-lg italic font-bold whitespace-wrap text-nlack">BADAN
+                        PUSAT
+                        STATISTIK<br>KOTA TEGAL</span>
+                </div>
                 <div
-                    class="block p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                    class="block shadow-2xl shadow-blue-600 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
                     <form class="max-w-md mx-auto" method="POST" action=/login>
                         @csrf
                         <div class="mb-5">
@@ -45,7 +50,7 @@
                                 me</label>
                         </div>
                         <button type="submit"
-                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Login</button>
                     </form>
                 </div>
             </div>

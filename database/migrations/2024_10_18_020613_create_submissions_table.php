@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('realisasi'); // Link to the submitted task
             $table->timestamp('tgl_dikumpulkan')->nullable(); // Add this line for the submission date
             $table->date('tgl_realisasi');
+            $table->tinyInteger('approval_status')->default(0)->comment('0 = Pending, 1 = Approved, 2 = Rejected');
             $table->timestamps();
         });
     }

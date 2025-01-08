@@ -16,6 +16,7 @@ class Submission extends Model
         'link_tugas', // Link to the submitted assignment
         'tgl_realisasi',
         'tgl_pengumpulan', // Date of submission
+        'approval_status',
     ];
 
     protected $casts = [
@@ -32,5 +33,26 @@ class Submission extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Helper methods to check approval status
+    public function getApprovalStatusLabelAttribute()
+    {
+        return ['Pending', 'Approved', 'Rejected'][$this->approval_status] ?? 'Pending';
+    }
+
+    public function isPending()
+    {
+        return $this->approval_status === 0;
+    }
+
+    public function isApproved()
+    {
+        return $this->approval_status === 1;
+    }
+
+    public function isRejected()
+    {
+        return $this->approval_status === 2;
     }
 }

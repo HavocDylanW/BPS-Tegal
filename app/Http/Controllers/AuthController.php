@@ -50,11 +50,11 @@ class AuthController extends Controller
 
         switch ($roleName) {
             case 'Employee':
-                return redirect()->route('employee.dashboard');
+                return redirect()->route('dashboard');
             case 'Admin':
-                return redirect()->route('admin.dashboard');
+                return redirect()->route('dashboard');
             case 'Super Admin':
-                return redirect()->route('superAdmin.dashboard');
+                return redirect()->route('dashboard');
             default:
                 return abort(403, 'Unauthorized');
         }

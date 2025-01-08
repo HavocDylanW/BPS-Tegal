@@ -20,8 +20,13 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
+        'gender',
+        'phone',
+        'address',
         'password',
-    ];
+        'profile_picture',
+    ];    
 
     /**
      * The attributes that should be hidden for serialization.
@@ -69,5 +74,10 @@ class User extends Authenticatable
     public function submissions()
     {
         return $this->hasMany(AssignmentSubmission::class, 'employee_id');
+    }
+
+    public function getProfilePictureAttribute($value)
+    {
+        return $value ? 'storage/profile_pictures/' . $value : null; // Adjust path as needed
     }
 }
